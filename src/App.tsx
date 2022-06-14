@@ -1,62 +1,50 @@
-import { useEffect, useState } from "react";
-import { Post } from "./types/Post";
-import { PostForm } from "./Components/PostForm";
-import { PostItem } from "./Components/PostItem";
-import { api } from "./api";
-
+import { FormAdd } from "./components/FormAdd";
+import { UsePeopleList } from "./reducers/peopleList";
 
 const App = () => {
-const [posts, setPosts] = useState<Post[]>([]);
-const [loading, setLoading] = useState(false);
+  const [list, listDispatch] = UsePeopleList();
 
-useEffect(() => {
-loadPosts();
-}, []);
-
-const loadPosts = async () => {
-  setLoading(true);
-  let json = await api.getAllPosts();
-  setLoading(false);
-  setPosts(json);
-}
-
-  const handleAddPost = async (title: string, body: string) => {
- 
-    let json = await api.addNewPost(title, body, 1);
-    if(json.id) {
-      alert("Post adicionado com sucesso!")
-    } else {
-      alert("Ocorreu algum erro");
-    }
+  const handleAddForm = (inputName: string) => {
+    listDispatch({
+      type: 'ADD',
+      payload: {
+        name: inputName
+      }
+    })
   }
 
-  return (
+  const deletePerson = (id: string) => {
+    listDispatch({
+      type: 'DEL',
+      payload: { id }
+    });
+  }
+
+  const handleOrderButton = () => {
+    listDispatch({
+      type: 'ORDER'
+    });
+  }
+
+  return ( 
     <div>
-      {loading &&
-        <div>Carregando...</div>
-      }
+      <hr/>
 
-      <PostForm onAdd={handleAddPost}/>
+      <FormAdd onData={handleAddForm}/>
       
-      {!loading && posts.length > 0 &&
-        <>
-        <div>Total de Posts: {posts.length}</div>
-
-        <div>
-          {posts.map((item, index) => (
-           
-           <PostItem key={index} data={item} />
-           
-          ))} 
-        </div>
-        </>
-      }
-
-      {!loading && posts.length === 0 &&
-      <div>Não há posts para exibir</div>
-      
-      }
+      <button className="border-solid border-2 text-[20px] p-1" onClick={handleOrderButton}>Ordenar</button>
+      <br/>
+      Lista de pessoas:
+      <ul>
+        {list.map((item, index) => (
+          <li key={index}>{item.name}
+          <button className="border-1 bg-red-600 p-0.25 ml-3" onClick={() => deletePerson(item.id)}>[ Remove ]</button>
+          
+          </li>     
+        ))}
+      </ul>
     </div>
   );
-  }
+}
+
 export default App;
